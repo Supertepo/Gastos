@@ -51,6 +51,7 @@ val ErrorColor = Color(0xFFEF4444)
 fun formatearMonto(centavos: Long): String {
     return String.format(Locale.getDefault(), "$%.2f", centavos / 100.0)
 }
+
 @SuppressLint("HardwareIds")
 fun getAndroidId(context: Context): String {
     return Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID) ?: "Desconocido"
@@ -106,7 +107,10 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
             title = { Text(text = tituloAlerta) },
             text = { Text(text = mensajeAlerta) },
             confirmButton = {
-                Button(onClick = { mostrarDialogoAlerta = false }) {
+                Button(
+                    onClick = { mostrarDialogoAlerta = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor, contentColor = Color.White)
+                ) {
                     Text("Aceptar")
                 }
             }
@@ -141,7 +145,7 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
                             mostrarMensaje("Error", "El nombre no puede estar vacío.")
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor, contentColor = Color.White)
                 ) {
                     Text("Guardar")
                 }
@@ -188,7 +192,7 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
                             mostrarMensaje("Error", "El nombre no puede estar vacío.")
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor, contentColor = Color.White)
                 ) {
                     Text("Actualizar")
                 }
@@ -313,7 +317,7 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
                             }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor, contentColor = Color.White)
                 ) {
                     Text(if (idGastoEnEdicion == null) "Guardar" else "Actualizar")
                 }
@@ -335,7 +339,7 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
         )
     }
 
-    // Cálculos para el resumen general
+    // Cálculos para el resumen general y desglosado
     val gastoTotalCentavos = viewModel.resumen.sumOf { it.total }
     val totalCategorias = viewModel.categorias.size
     val totalGastos = listaGastos.size
@@ -343,7 +347,7 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("CONTROL DE GASTOS", fontWeight = FontWeight.Bold) },
+                title = { Text("CONTROL DE GASTOS", fontWeight = FontWeight.Bold, color = Color.Black) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundColor)
             )
         },
@@ -358,7 +362,7 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // ==========================================
-            // PANEL DE RESUMEN DE GASTOS
+            // PANEL DE RESUMEN (TOTAL ARRIBA, DESGLOSE ABAJO)
             // ==========================================
             item {
                 Card(
@@ -374,7 +378,7 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "RESUMEN GENERAL",
+                            text = "TOTAL GENERAL",
                             color = Color.White.copy(alpha = 0.8f),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -388,12 +392,48 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
 
                         HorizontalDivider(color = Color.White.copy(alpha = 0.3f))
 
+                        Text(
+                            text = "DESGLOSE POR CATEGORÍA",
+                            color = Color.White.copy(alpha = 0.8f),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        if (viewModel.resumen.isEmpty()) {
+                            Text(
+                                text = "No hay categorías registradas.",
+                                color = Color.White.copy(alpha = 0.7f),
+                                fontSize = 13.sp
+                            )
+                        } else {
+                            viewModel.resumen.forEach { itemResumen ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = itemResumen.nombre,
+                                        color = Color.White,
+                                        fontSize = 14.sp
+                                    )
+                                    Text(
+                                        text = formatearMonto(itemResumen.total),
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        }
+
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.3f))
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = "Categorías: $totalCategorias", color = Color.White, fontSize = 14.sp)
-                            Text(text = "Registros: $totalGastos", color = Color.White, fontSize = 14.sp)
+                            Text(text = "Categorías: $totalCategorias", color = Color.White, fontSize = 13.sp)
+                            Text(text = "Registros: $totalGastos", color = Color.White, fontSize = 13.sp)
                         }
                     }
                 }
@@ -414,7 +454,7 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor, contentColor = Color.White)
                     ) {
                         Text("+ Categoría", fontWeight = FontWeight.Bold)
                     }
@@ -430,7 +470,7 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor)
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryColor, contentColor = Color.White)
                     ) {
                         Text("+ Registrar Gasto", fontWeight = FontWeight.Bold)
                     }
@@ -468,7 +508,12 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = cat.nombre, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                            Text(
+                                text = cat.nombre,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 15.sp,
+                                color = Color.Black
+                            )
 
                             Row {
                                 TextButton(onClick = {
@@ -543,11 +588,25 @@ fun PantallaControlGastosSimple(viewModel: GastosViewModel) {
                                     color = PrimaryColor
                                 )
                                 if (!gasto.descripcion.isNullOrBlank()) {
-                                    Text(text = "Tipo: ${gasto.descripcion}", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                                    Text(
+                                        text = "Tipo: ${gasto.descripcion}",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color.Black
+                                    )
                                 } else {
-                                    Text(text = "Sin descripción", fontSize = 14.sp, color = Color.Gray)
+                                    Text(
+                                        text = "Sin descripción",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray
+                                    )
                                 }
-                                Text(text = formatearMonto(gasto.monto), fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    text = formatearMonto(gasto.monto),
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.Black
+                                )
                             }
 
                             Row {
